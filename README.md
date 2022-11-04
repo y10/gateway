@@ -1,4 +1,4 @@
-# Azure Form Recognizer client library for Deno
+# Bimba middleware framework for Deno.
 A lightweight middleware framework for Deno's native HTTP server.
 
 ## Getting started
