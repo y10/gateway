@@ -1,5 +1,5 @@
 import { serve, ServeInit } from "https://deno.land/std@0.159.0/http/server.ts";
-import { Middleware, IRequestHandler, IRequestContext } from "./interfaces.ts";
+import { Middleware, IRequestContext } from "./interfaces.ts";
 import { dispatch } from "./dispatch.ts";
 import { Router } from "./router.ts";
 
@@ -8,13 +8,13 @@ export class Server {
   public static start(): Server;
   public static start(router: Router): Server;
   public static start(config: {
-    [key: string]: IRequestHandler<unknown>;
+    [key: string]: Middleware | Array<Middleware>;
   }): Server;
   public static start(
     config?:
       | Router
       | {
-          [key: string]: IRequestHandler<unknown>;
+          [key: string]: Middleware | Array<Middleware>;
         }
   ): Server {
     const server = new Server();
@@ -23,11 +23,14 @@ export class Server {
     } else if (config) {
       server.use(new Router(config));
     }
+    
     return server;
   }
 
-  public use(middleware: Middleware): Server {
-    this.middlewares.push(middleware);
+  public use(...middlewares: Middleware[]): Server {
+    for (const middleware of middlewares) {
+      this.middlewares.push(middleware);
+    }
     return this;
   }
 
@@ -41,6 +44,7 @@ export class Server {
         request,
         params: {},
         search: {},
+        state: {},
       };
 
       await dispatch(context, ...this.middlewares);
@@ -57,7 +61,7 @@ export class Server {
 
       return new Response(`${context.response}`);
     } catch (error) {
-      return new Response(error, { status: 500 });
+      return new Response(`${error}`, { status: 500 });
     }
   }
 }

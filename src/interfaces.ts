@@ -2,6 +2,7 @@ export interface IRequestParams {
   [param: string]: string;
 }
 export interface IRequestContext {
+  state: Record<string, unknown>;
   request: Request;
   response?: unknown;
   params: IRequestParams;
@@ -28,16 +29,16 @@ export class SearchParams implements IRequestParams {
   }
 }
 
-export interface IRequestHandler<TResult> {
+export interface IMiddlewareRequestHandler<TResult> {
   (context: IRequestContext): Promise<TResult>;
 }
 
 export interface IMiddlewareHandler {
-  (context: IRequestContext, next: () => Promise<void>): Promise<void>;
+  (context: IRequestContext, next?: () => Promise<void>): Promise<void>;
 }
 
 export interface IMiddleware {
   handle: IMiddlewareHandler;
 }
 
-export type Middleware = IMiddleware | IMiddlewareHandler;
+export type Middleware = IMiddlewareRequestHandler<unknown> | IMiddlewareHandler | IMiddleware;
